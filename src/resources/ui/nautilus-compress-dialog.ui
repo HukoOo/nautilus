@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="NautilusCompressDialog" parent="AdwWindow">
+    <property name="title" translatable="yes">Create Compressed Archive</property>
+    <property name="resizable">False</property>
+    <property name="modal">True</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="default-width">500</property>
+    <property name="default-height">210</property>
+    <property name="default-widget">activation_button</property>
+    <property name="content">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkHeaderBar">
+            <property name="show-title-buttons">False</property>
+            <child type="start">
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Cancel</property>
+                <signal name="clicked" handler="gtk_window_close" swapped="yes"/>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton" id="activation_button">
+                <property name="label" translatable="yes">Create</property>
+                <binding name="sensitive">
+                  <closure type="gboolean" function="are_name_and_passphrase_ready">
+                    <lookup name="passed">validator</lookup>
+                    <lookup name="selected-item">extension_dropdown</lookup>
+                    <lookup name="text">passphrase_entry</lookup>
+                    <lookup name="text">passphrase_confirm_entry</lookup>
+                  </closure>
+                </binding>
+                <signal name="clicked" handler="nautilus_filename_validator_try_accept" object="validator" swapped="yes"/>
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="content_area">
+            <property name="orientation">vertical</property>
+            <property name="margin-top">30</property>
+            <property name="margin-bottom">30</property>
+            <property name="margin-start">30</property>
+            <property name="margin-end">30</property>
+            <property name="width-request">390</property>
+            <property name="halign">center</property>
+            <property name="spacing">6</property>
+            <child>
+              <object class="GtkLabel" id="name_label">
+                <property name="label" translatable="yes">Archive name</property>
+                <property name="xalign">0</property>
+                <attributes>
+                  <attribute name="weight" value="bold"></attribute>
+                </attributes>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="spacing">12</property>
+                <child>
+                  <object class="GtkEntry" id="name_entry">
+                    <accessibility>
+                      <relation name="labelled-by">name_label</relation>
+                    </accessibility>
+                    <property name="hexpand">True</property>
+                    <property name="width-chars">30</property>
+                    <signal name="changed" handler="nautilus_filename_validator_validate" object="validator" swapped="yes"/>
+                    <signal name="activate" handler="on_name_entry_activated" swapped="yes"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkDropDown" id="extension_dropdown">
+                    <signal name="notify::selected-item" handler="update_selected_format" swapped="yes"/>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRevealer">
+                <property name="reveal-child" bind-source="validator" bind-property="has-feedback"/>
+                <property name="child">
+                  <object class="GtkLabel">
+                    <property name="label" bind-source="validator" bind-property="feedback-text"/>
+                    <property name="margin_top">4</property>
+                    <property name="margin_bottom">4</property>
+                    <property name="xalign">0</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="passphrase_label">
+                <property name="visible">False</property>
+                <property name="label" translatable="yes">Password</property>
+                <property name="margin-top">6</property>
+                <property name="xalign">0</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkPasswordEntry" id="passphrase_entry">
+                <accessibility>
+                  <relation name="labelled-by">passphrase_label</relation>
+                </accessibility>
+                <property name="visible">False</property>
+                <property name="placeholder-text" translatable="yes">Enter a Password</property>
+                <property name="show-peek-icon">True</property>
+                <signal name="activate" handler="gtk_widget_grab_focus" object="passphrase_confirm_entry" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="passphrase_confirm_label">
+                <property name="visible">False</property>
+                <property name="label" translatable="yes">Confirm Password</property>
+                <property name="margin-top">6</property>
+                <property name="xalign">0</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkPasswordEntry" id="passphrase_confirm_entry">
+                <accessibility>
+                  <relation name="labelled-by">passphrase_confirm_label</relation>
+                </accessibility>
+                <property name="activates-default">true</property>
+                <property name="visible">False</property>
+                <property name="placeholder-text" translatable="yes">Confirm Password</property>
+                <property name="show-peek-icon">True</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+    <child>
+      <object class="GtkShortcutController">
+        <property name="scope">managed</property>
+        <child>
+          <object class="GtkShortcut">
+            <property name="trigger">Escape</property>
+            <property name="action">action(window.close)</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+  <object class="GtkSizeGroup" id="extension_sizegroup"/>
+  <object class="NautilusFilenameValidator" id="validator">
+    <binding name="new-name">
+      <closure type="gchararray" function="maybe_append_extension">
+        <lookup name="text">name_entry</lookup>
+        <lookup name="selected-item">extension_dropdown</lookup>
+      </closure>
+    </binding>
+    <signal name="name-accepted" handler="on_name_accepted" swapped="yes"/>
+  </object>
+</interface>
